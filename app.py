@@ -1,3 +1,4 @@
+
 """
 💕 我们的故事 - 情侣互动 App（双端版）
 支持：云端数据同步、信箱、每日一问（身份隔离）、约会计划、恋爱小说、今天吃什么
@@ -67,6 +68,14 @@ body, p, div, span, label {
     font-family: 'Lato', sans-serif !important;
     color: #4a2030 !important;
 }
+
+/* 隐藏 expander 的 arrow-right / arrow-down 文字 */
+[data-testid="stExpanderToggleIcon"] { display: none !important; }
+summary svg { display: inline !important; }
+details > summary { list-style: none !important; }
+details > summary::-webkit-details-marker { display: none !important; }
+/* 兼容不同版本 Streamlit expander arrow 文字 */
+[data-testid="stExpander"] summary span[data-testid="stExpanderToggleIcon"] { display: none !important; }
 
 /* 登录页面 */
 .login-container {
@@ -517,6 +526,17 @@ if "show_partner_answer" not in st.session_state:
     st.session_state.show_partner_answer = False
 if "anniversary" not in st.session_state:
     st.session_state.anniversary = date(2023, 9, 26)
+if "couple_photo_data" not in st.session_state:
+    # 从本地文件加载已保存的合照
+    _photo_path = "couple_photo.bin"
+    if os.path.exists(_photo_path):
+        try:
+            with open(_photo_path, "rb") as _f:
+                st.session_state.couple_photo_data = _f.read()
+        except:
+            st.session_state.couple_photo_data = None
+    else:
+        st.session_state.couple_photo_data = None
 
 
 def go(page):
@@ -572,7 +592,7 @@ if st.session_state.page == "login":
     st.markdown("<div class='login-container'>", unsafe_allow_html=True)
 
     st.markdown("<div class='login-title'>💕 柴耶大本营</div>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align:center; color:#b07080; font-size:0.95rem; margin-top:-8px;'>专属情侣互动空间</p>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align:center; color:#b07080; font-size:0.95rem; margin-top:-8px;'>我们的专属空间</p>", unsafe_allow_html=True)
 
     # 每日浪漫宣言
     decl = get_today_declaration()
@@ -948,7 +968,16 @@ if st.session_state.page == "home":
         st.markdown("<p style='color:#c0395a; font-family:\"Noto Serif SC\",serif; font-size:1rem; margin-bottom:12px; font-weight:700;'>📸 我们的合照</p>", unsafe_allow_html=True)
         uploaded_photo = st.file_uploader("上传合影", type=["jpg", "jpeg", "png", "webp"], key="couple_photo", label_visibility="collapsed")
         if uploaded_photo:
-            st.image(uploaded_photo, use_container_width=True)
+            photo_bytes = uploaded_photo.read()
+            st.session_state.couple_photo_data = photo_bytes
+            # 持久化保存到本地文件
+            try:
+                with open("couple_photo.bin", "wb") as _f:
+                    _f.write(photo_bytes)
+            except:
+                pass
+        if st.session_state.couple_photo_data:
+            st.image(st.session_state.couple_photo_data, use_container_width=True)
         else:
             st.markdown("""
             <div class="photo-frame-inner">
@@ -1252,28 +1281,51 @@ elif st.session_state.page == "food":
         if not client:
             st.error("请先填入 DeepSeek API Key！")
         else:
-            prompt = f"""你是一个美食决策专家，请帮这对情侣解决"今天吃什么"的难题。
+            is_home_cooking = scene == "在家自己做"
+            if is_home_cooking:
+                prompt = f"""你是一个美食决策专家，帮这对情侣决定今天在家做什么吃。
 
-情侣信息：
+信息：
 - {USER_A_NAME} 不吃：{avoid1 or "无禁忌"}
 - {USER_B_NAME} 不吃：{avoid2 or "无禁忌"}
-- 城市：{food_city or "不限"}
-- 用餐场景：{scene}
 - 预算：{food_budget}
 - 今日心情：{mood_food}
 - 想吃的方向：{craving or "没有特别想法"}
 
-请给出3个推荐方案，每个方案包括：
-1. 推荐菜系或餐厅类型，起一个有趣的名字
-2. 推荐理由，结合今日心情和两人情况，说得有温度
-3. 具体推荐菜品2-3个
-4. 如果是"在家自己做"，附上一个简单食谱思路
+请给出3个在家做饭方案，每个方案包含：
+方案名称（用emoji点缀，起个有趣的名字）
+推荐理由（一两句，结合心情说）
+主要食材和简单做法思路
 
-格式清晰，语气活泼温暖，用 emoji 点缀，中文回答。"""
+要求：纯文字输出，不要用#号、**、---等markdown符号，不要编号，直接用换行分隔，语气活泼温暖，中文。"""
+            else:
+                prompt = f"""你是一个美食决策专家，帮这对情侣决定今天{scene}吃什么。
+
+信息：
+- {USER_A_NAME} 不吃：{avoid1 or "无禁忌"}
+- {USER_B_NAME} 不吃：{avoid2 or "无禁忌"}
+- 城市：{food_city or "不限"}
+- 预算：{food_budget}
+- 今日心情：{mood_food}
+- 想吃的方向：{craving or "没有特别想法"}
+
+请给出3个不同方向的推荐方案，每个方案包含：
+方案名称（用emoji点缀，起个有趣的名字）
+推荐理由（一两句，结合心情说）
+推荐菜品2-3个
+
+要求：纯文字输出，不要用#号、**、---等markdown符号，不要编号，直接用换行分隔，三个方案之间空一行，语气活泼温暖，简洁，中文。"""
 
             with st.spinner("🍳 帮你们想今天吃什么..."):
                 try:
-                    result = chat(client, prompt, max_tokens=1200)
+                    result = chat(client, prompt, max_tokens=800)
+                    # 清理多余的 markdown 符号
+                    import re
+                    result = re.sub(r'#+\s*', '', result)
+                    result = re.sub(r'\*{1,3}', '', result)
+                    result = re.sub(r'---+', '', result)
+                    result = re.sub(r'___+', '', result)
+                    result = result.strip()
                     st.markdown('<div class="love-divider">✦ ♥ ✦</div>', unsafe_allow_html=True)
                     st.markdown(f'<div class="food-card">{result.replace(chr(10), "<br>")}</div>', unsafe_allow_html=True)
                 except Exception as e:
@@ -1480,6 +1532,6 @@ elif st.session_state.page == "daily_qa":
 
 st.markdown("""
 <p style="text-align:center; color:#c0395a; font-size:0.85rem; margin-top:40px;">
-💕 每一个普通的日子，因为有你，都变成了值得记住的样子 💕
+💕 特别鸣谢你，制造出更欢乐的我 💕
 </p>
 """, unsafe_allow_html=True)
