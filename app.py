@@ -1,4 +1,3 @@
-
 """
 💕 我们的故事 - 情侣互动 App（双端版）
 支持：云端数据同步、信箱、每日一问（身份隔离）、约会计划、恋爱小说、今天吃什么
@@ -13,10 +12,32 @@ import hashlib
 import base64
 
 # ════════════════════════════════════════════════════════════════════
+# 💾 本地配置持久化（GitHub Token / API Key 自动记住）
+# ════════════════════════════════════════════════════════════════════
+
+CONFIG_FILE = "local_config.json"
+
+def load_local_config():
+    if os.path.exists(CONFIG_FILE):
+        try:
+            with open(CONFIG_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except:
+            pass
+    return {}
+
+def save_local_config(cfg):
+    try:
+        with open(CONFIG_FILE, "w", encoding="utf-8") as f:
+            json.dump(cfg, f, ensure_ascii=False, indent=2)
+    except:
+        pass
+
+# ════════════════════════════════════════════════════════════════════
 # 📄 页面配置（必须第一行）
 # ════════════════════════════════════════════════════════════════════
 st.set_page_config(
-    page_title="💕 我们的故事",
+    page_title="💕 柴耶大本营",
     page_icon="💕",
     layout="wide",
     initial_sidebar_state="collapsed",
@@ -55,7 +76,7 @@ body, p, div, span, label {
 }
 .login-title {
     text-align: center;
-    font-family: 'Pacifico', cursive !important;
+    font-family: 'Noto Serif SC', serif !important;
     font-size: 2.6rem;
     color: #c0395a !important;
     margin-bottom: 8px;
@@ -474,14 +495,18 @@ if "page" not in st.session_state:
     st.session_state.page = "login"
 if "current_user" not in st.session_state:
     st.session_state.current_user = None
+
+# 加载本地保存的配置（首次启动时从文件读取）
+_cfg = load_local_config()
+
 if "api_key" not in st.session_state:
-    st.session_state.api_key = ""
+    st.session_state.api_key = _cfg.get("api_key", "")
 if "github_token" not in st.session_state:
-    st.session_state.github_token = ""
+    st.session_state.github_token = _cfg.get("github_token", "")
 if "github_owner" not in st.session_state:
-    st.session_state.github_owner = ""
+    st.session_state.github_owner = _cfg.get("github_owner", "")
 if "github_repo" not in st.session_state:
-    st.session_state.github_repo = ""
+    st.session_state.github_repo = _cfg.get("github_repo", "")
 if "mailbox_open" not in st.session_state:
     st.session_state.mailbox_open = False
 if "daily_question" not in st.session_state:
@@ -546,7 +571,7 @@ def save_qa_data(data):
 if st.session_state.page == "login":
     st.markdown("<div class='login-container'>", unsafe_allow_html=True)
 
-    st.markdown("<div class='login-title'>💕 我们的故事</div>", unsafe_allow_html=True)
+    st.markdown("<div class='login-title'>💕 柴耶大本营</div>", unsafe_allow_html=True)
     st.markdown("<p style='text-align:center; color:#b07080; font-size:0.95rem; margin-top:-8px;'>专属情侣互动空间</p>", unsafe_allow_html=True)
 
     # 每日浪漫宣言
@@ -593,14 +618,25 @@ if st.session_state.page == "login":
 
     # API Key 输入
     st.markdown("<p style='color:#8b3a52; font-weight:600; margin-bottom:6px;'>🔑 DeepSeek API Key</p>", unsafe_allow_html=True)
-    api_input = st.text_input("api_key_input", type="password", placeholder="sk-xxxxx（用于AI功能）",
+    api_input = st.text_input("api_key_input", type="password",
+                               placeholder="sk-xxxxx（用于AI功能）" if not st.session_state.api_key else "已保存 ✓（如需修改请重新输入）",
                                label_visibility="collapsed", key="api_key_field")
 
     # GitHub 同步配置（折叠）
-    with st.expander("☁️ 云端同步配置（可选，用于双设备同步）"):
-        st.text_input("GitHub Token", type="password", placeholder="ghp_xxxxx", key="github_token")
-        st.text_input("GitHub 用户名", placeholder="your-username", key="github_owner")
-        st.text_input("仓库名称", placeholder="love-app-data", key="github_repo")
+    with st.expander("🌥️ 云端同步配置（可选，用于双设备同步）"):
+        # 判断是否已有保存的值
+        _has_saved = bool(st.session_state.github_token and st.session_state.github_owner and st.session_state.github_repo)
+        if _has_saved:
+            st.success(f"✅ 已记住配置：{st.session_state.github_owner}/{st.session_state.github_repo}")
+        gh_token_in = st.text_input("GitHub Token", type="password",
+                                     placeholder="ghp_xxxxx（已保存，留空不修改）" if st.session_state.github_token else "ghp_xxxxx",
+                                     key="github_token_input")
+        gh_owner_in = st.text_input("GitHub 用户名",
+                                     placeholder=st.session_state.github_owner if st.session_state.github_owner else "your-username",
+                                     key="github_owner_input")
+        gh_repo_in = st.text_input("仓库名称",
+                                    placeholder=st.session_state.github_repo if st.session_state.github_repo else "love-app-data",
+                                    key="github_repo_input")
         st.caption("💡 在 GitHub > Settings > Developer settings > Personal access tokens 创建 Token，赋予 repo 权限")
 
     st.markdown("<br>", unsafe_allow_html=True)
@@ -609,8 +645,26 @@ if st.session_state.page == "login":
     can_enter = st.session_state.current_user is not None
     if can_enter:
         if st.button("💕 进入我们的小窝", use_container_width=True):
+            _changed = False
             if api_input:
                 st.session_state.api_key = api_input
+                _changed = True
+            if gh_token_in:
+                st.session_state.github_token = gh_token_in
+                _changed = True
+            if gh_owner_in:
+                st.session_state.github_owner = gh_owner_in
+                _changed = True
+            if gh_repo_in:
+                st.session_state.github_repo = gh_repo_in
+                _changed = True
+            # 保存到本地文件
+            save_local_config({
+                "api_key": st.session_state.api_key,
+                "github_token": st.session_state.github_token,
+                "github_owner": st.session_state.github_owner,
+                "github_repo": st.session_state.github_repo,
+            })
             go("home")
     else:
         st.info("请先选择你的身份，再进入 💕")
@@ -739,16 +793,38 @@ if st.session_state.page == "home":
                 st.rerun()
         with col_s2:
             new_key = st.text_input("🔑 DeepSeek API Key", type="password",
-                                     value=st.session_state.api_key, key="api_key_home")
-            if new_key != st.session_state.api_key:
+                                     placeholder="已保存 ✓" if st.session_state.api_key else "sk-xxxxx",
+                                     key="api_key_home")
+            if new_key and new_key != st.session_state.api_key:
                 st.session_state.api_key = new_key
+                save_local_config({
+                    "api_key": st.session_state.api_key,
+                    "github_token": st.session_state.github_token,
+                    "github_owner": st.session_state.github_owner,
+                    "github_repo": st.session_state.github_repo,
+                })
         col_s3, col_s4, col_s5 = st.columns(3)
         with col_s3:
-            st.text_input("GitHub Token", type="password", key="github_token")
+            _gh_t = st.text_input("GitHub Token", type="password",
+                                   placeholder="已保存 ✓" if st.session_state.github_token else "ghp_xxxxx",
+                                   key="github_token_home")
+            if _gh_t and _gh_t != st.session_state.github_token:
+                st.session_state.github_token = _gh_t
+                save_local_config({"api_key": st.session_state.api_key, "github_token": st.session_state.github_token, "github_owner": st.session_state.github_owner, "github_repo": st.session_state.github_repo})
         with col_s4:
-            st.text_input("GitHub 用户名", key="github_owner")
+            _gh_o = st.text_input("GitHub 用户名",
+                                   placeholder=st.session_state.github_owner if st.session_state.github_owner else "your-username",
+                                   key="github_owner_home")
+            if _gh_o and _gh_o != st.session_state.github_owner:
+                st.session_state.github_owner = _gh_o
+                save_local_config({"api_key": st.session_state.api_key, "github_token": st.session_state.github_token, "github_owner": st.session_state.github_owner, "github_repo": st.session_state.github_repo})
         with col_s5:
-            st.text_input("仓库名称", key="github_repo")
+            _gh_r = st.text_input("仓库名称",
+                                   placeholder=st.session_state.github_repo if st.session_state.github_repo else "love-app-data",
+                                   key="github_repo_home")
+            if _gh_r and _gh_r != st.session_state.github_repo:
+                st.session_state.github_repo = _gh_r
+                save_local_config({"api_key": st.session_state.api_key, "github_token": st.session_state.github_token, "github_owner": st.session_state.github_owner, "github_repo": st.session_state.github_repo})
 
     st.markdown('<div class="love-divider">✦ ♥ ✦ ♥ ✦</div>', unsafe_allow_html=True)
 
@@ -798,7 +874,159 @@ if st.session_state.page == "home":
             go("daily_qa")
 
     st.markdown('<div class="love-divider">✦ ♥ ✦ ♥ ✦</div>', unsafe_allow_html=True)
-    st.markdown("<p style='text-align:center; color:#b07080; font-size:0.9rem;'>右上角 💌 信箱 可以给对方发消息 · 点击功能卡片开始使用 💕</p>", unsafe_allow_html=True)
+
+    # ── 相框 + 双时区时钟 ──────────────────────────────────────────
+    st.markdown("""
+    <style>
+    .photo-frame-wrap {
+        background: rgba(255,255,255,0.92);
+        border: 2.5px solid #f3b8c4;
+        border-radius: 24px;
+        padding: 24px;
+        text-align: center;
+        box-shadow: 0 6px 24px rgba(192,57,90,0.10);
+        margin-bottom: 16px;
+    }
+    .photo-frame-inner {
+        border: 4px dashed #f3b8c4;
+        border-radius: 18px;
+        min-height: 180px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #fff5f8, #fff0f8);
+        margin-bottom: 8px;
+    }
+    .photo-placeholder {
+        color: #d4a0b0;
+        font-size: 0.95rem;
+        line-height: 2;
+    }
+    .clock-card {
+        background: linear-gradient(135deg, #ffe8ee, #fff5f0);
+        border: 1.5px solid #f3b8c4;
+        border-radius: 18px;
+        padding: 18px 14px;
+        text-align: center;
+        box-shadow: 0 4px 16px rgba(192,57,90,0.08);
+    }
+    .clock-label {
+        font-family: 'Noto Serif SC', serif;
+        font-size: 0.82rem;
+        color: #c0395a;
+        letter-spacing: 1.5px;
+        margin-bottom: 6px;
+    }
+    .clock-time {
+        font-family: 'Pacifico', cursive;
+        font-size: 1.7rem;
+        color: #8b3a52;
+        margin: 2px 0 4px 0;
+    }
+    .clock-date {
+        font-size: 0.78rem;
+        color: #b07080;
+        margin-bottom: 8px;
+    }
+    .clock-status {
+        font-family: 'Noto Serif SC', serif;
+        font-size: 0.88rem;
+        color: #9a6070;
+        line-height: 1.7;
+        background: rgba(255,255,255,0.7);
+        border-radius: 10px;
+        padding: 8px 10px;
+        margin-top: 6px;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+    frame_col, clock_col = st.columns([1.2, 1])
+
+    with frame_col:
+        st.markdown('<div class="photo-frame-wrap">', unsafe_allow_html=True)
+        st.markdown("<p style='color:#c0395a; font-family:\"Noto Serif SC\",serif; font-size:1rem; margin-bottom:12px; font-weight:700;'>📸 我们的合照</p>", unsafe_allow_html=True)
+        uploaded_photo = st.file_uploader("上传合影", type=["jpg", "jpeg", "png", "webp"], key="couple_photo", label_visibility="collapsed")
+        if uploaded_photo:
+            st.image(uploaded_photo, use_container_width=True)
+        else:
+            st.markdown("""
+            <div class="photo-frame-inner">
+                <div class="photo-placeholder">
+                    📷<br>点击上方上传<br>我们的合照 💕
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    with clock_col:
+        from datetime import timezone
+        try:
+            import zoneinfo
+            uk_tz = zoneinfo.ZoneInfo("Europe/London")
+            hk_tz = zoneinfo.ZoneInfo("Asia/Hong_Kong")
+        except Exception:
+            try:
+                import pytz
+                uk_tz = pytz.timezone("Europe/London")
+                hk_tz = pytz.timezone("Asia/Hong_Kong")
+            except Exception:
+                uk_tz = None
+                hk_tz = None
+
+        now_utc = datetime.now(timezone.utc)
+
+        if uk_tz and hk_tz:
+            uk_now = now_utc.astimezone(uk_tz)
+            hk_now = now_utc.astimezone(hk_tz)
+        else:
+            # fallback: UK = UTC, HK = UTC+8
+            from datetime import timedelta
+            uk_now = now_utc
+            hk_now = now_utc + timedelta(hours=8)
+
+        uk_h = uk_now.hour
+        hk_h = hk_now.hour
+
+        def guess_activity(hour, name):
+            if 0 <= hour < 6:
+                return f"现在是凌晨啦，{name}可能在呼呼大睡哦 🌙"
+            elif 6 <= hour < 9:
+                return f"{name}可能刚刚起床，迷迷糊糊地洗漱中 ☕"
+            elif 9 <= hour < 12:
+                return f"{name}应该在认真工作/学习吧，要加油哦 📚"
+            elif 12 <= hour < 14:
+                return f"午饭时间！{name}在吃好吃的吗 🍱"
+            elif 14 <= hour < 17:
+                return f"{name}可能正在努力奋斗中，下午茶时间快到啦 ☕"
+            elif 17 <= hour < 19:
+                return f"下班啦～{name}可能在回家路上 🚗"
+            elif 19 <= hour < 22:
+                return f"晚上好！{name}可能在放松休息或者想对方 💕"
+            else:
+                return f"夜深了，{name}还没睡？快去休息吧 😴"
+
+        # 星期几中文
+        weekday_cn = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"]
+        uk_wd = weekday_cn[uk_now.weekday()]
+        hk_wd = weekday_cn[hk_now.weekday()]
+
+        st.markdown(f"""
+        <div class="clock-card" style="margin-bottom:14px;">
+            <div class="clock-label">🇬🇧 英国时间 · 耶公主</div>
+            <div class="clock-time">{uk_now.strftime('%H:%M')}</div>
+            <div class="clock-date">{uk_now.strftime('%Y年%m月%d日')} {uk_wd}</div>
+            <div class="clock-status">{guess_activity(uk_h, '耶公主')}</div>
+        </div>
+        <div class="clock-card">
+            <div class="clock-label">🇭🇰 香港时间 · 柴司机</div>
+            <div class="clock-time">{hk_now.strftime('%H:%M')}</div>
+            <div class="clock-date">{hk_now.strftime('%Y年%m月%d日')} {hk_wd}</div>
+            <div class="clock-status">{guess_activity(hk_h, '柴司机')}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown('<div class="love-divider">✦ ♥ ✦ ♥ ✦</div>', unsafe_allow_html=True)
 
 
 # ════════════════════════════════════════════════════════════════════
