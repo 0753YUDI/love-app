@@ -1,4 +1,5 @@
 
+
 """
 💕 我们的故事 - 情侣互动 App（双端版）
 支持：云端数据同步、信箱、每日一问（身份隔离）、约会计划、恋爱小说、今天吃什么
@@ -92,8 +93,8 @@ body, p, div, span, label {
 
 /* 在白色小按钮里加上传图标 */
 [data-testid="stFileUploaderDropzone"] button::before {
-    content: "⏫";
-    font-size: 1.4rem;
+    content: "Upload";
+    font-size: 0.85rem;
     display: block;
     text-align: center;
 }
