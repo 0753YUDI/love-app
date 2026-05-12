@@ -93,7 +93,7 @@ body, p, div, span, label {
 
 /* 在白色小按钮里加上传图标 */
 [data-testid="stFileUploaderDropzone"] button::before {
-    content: "Upload";
+    content: "Upload ⏫";
     font-size: 0.85rem;
     display: block;
     text-align: center;
