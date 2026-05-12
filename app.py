@@ -90,6 +90,14 @@ body, p, div, span, label {
     padding: 0 !important;
 }
 
+/* 在白色小按钮里加上传图标 */
+[data-testid="stFileUploaderDropzone"] button::before {
+    content: "⏫";
+    font-size: 1.4rem;
+    display: block;
+    text-align: center;
+}
+
 details > summary {
     list-style: none !important;
 }
