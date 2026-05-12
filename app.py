@@ -70,12 +70,19 @@ body, p, div, span, label {
 }
 
 /* 隐藏 expander 的 arrow-right / arrow-down 文字 */
-[data-testid="stExpanderToggleIcon"] { display: none !important; }
-summary svg { display: inline !important; }
-details > summary { list-style: none !important; }
-details > summary::-webkit-details-marker { display: none !important; }
-/* 兼容不同版本 Streamlit expander arrow 文字 */
-[data-testid="stExpander"] summary span[data-testid="stExpanderToggleIcon"] { display: none !important; }
+[data-testid="stExpanderToggleIcon"] {
+    visibility: hidden !important;
+    font-size: 0 !important;
+    width: 0 !important;
+}
+
+details > summary {
+    list-style: none !important;
+}
+
+details > summary::-webkit-details-marker {
+    display: none !important;
+}
 
 /* 登录页面 */
 .login-container {
@@ -957,6 +964,22 @@ if st.session_state.page == "home":
         border-radius: 10px;
         padding: 8px 10px;
         margin-top: 6px;
+    }
+
+    /* 隐藏 file_uploader 按钮内的 icon 文字 */
+    [data-testid="stFileUploaderDropzoneInstructions"] span[data-testid="stIconMaterial"],
+    [data-testid="stFileUploadDropzone"] span[data-testid="stIconMaterial"] {
+        visibility: hidden !important;
+        font-size: 0 !important;
+        width: 0 !important;
+    }
+
+    /* 隐藏顶部白色输入框 */
+    [data-testid="stTextInput"] input,
+    [data-testid="stTextInput"] > div > div {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
     }
     </style>
     """, unsafe_allow_html=True)
