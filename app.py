@@ -69,11 +69,25 @@ body, p, div, span, label {
     color: #4a2030 !important;
 }
 
-/* 隐藏 expander 的 arrow-right / arrow-down 文字 */
-[data-testid="stExpanderToggleIcon"] {
+/* 隐藏所有 Material icon 文字（upload、keyboard_arrow_right 等） */
+[data-testid="stIconMaterial"] {
     visibility: hidden !important;
     font-size: 0 !important;
     width: 0 !important;
+    display: inline-block !important;
+}
+
+/* 隐藏 file uploader 按钮内的 Upload 文字 */
+[data-testid="stFileUploaderDropzone"] button p {
+    display: none !important;
+}
+
+/* 去掉 file uploader 外层白色背景框 */
+[data-testid="stFileUploaderDropzone"] {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
 }
 
 details > summary {
