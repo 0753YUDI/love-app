@@ -1,6 +1,14 @@
 {
-  "balance": 200050.1,
+  "balance": 201050.1,
   "records": [
+    {
+      "id": "2026-05-13T23:29:03.398372",
+      "delta": 1000,
+      "balance_after": 201050.1,
+      "reason": "测试",
+      "operator": "耶公主",
+      "timestamp": "2026-05-13T23:29:03.398380"
+    },
     {
       "id": "2026-05-13T23:28:44.973374",
       "delta": 1000,
@@ -66,9 +74,15 @@
       "timestamp": "2026-05-13T23:16:53.598510"
     }
   ],
-  "last_milestone": 200000,
+  "last_milestone": 201000,
   "coin_notif": true,
-  "pending_reward": null,
+  "pending_reward": {
+    "id": "2026-05-13T23:29:03.398406_4445",
+    "emoji": "🦶",
+    "name": "洗脚券一张",
+    "triggered_at": "2026-05-13T23:29:03.398418",
+    "status": "pending"
+  },
   "card_lib": [],
   "used_card_lib": []
 }
