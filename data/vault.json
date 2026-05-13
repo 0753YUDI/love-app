@@ -83,14 +83,8 @@
     }
   ],
   "last_milestone": 202000,
-  "coin_notif": true,
-  "pending_reward": {
-    "id": "2026-05-13T23:31:17.300888_5088",
-    "emoji": "🎮",
-    "name": "打游戏勿扰券（5小时）",
-    "triggered_at": "2026-05-13T23:31:17.300895",
-    "status": "pending"
-  },
+  "coin_notif": false,
+  "pending_reward": null,
   "card_lib": [
     {
       "id": "2026-05-13T23:29:03.398406_4445",
@@ -100,6 +94,14 @@
       "status": "used",
       "collected_at": "2026-05-13T23:29:38.552482",
       "used_at": "2026-05-13T23:29:53.778159"
+    },
+    {
+      "id": "2026-05-13T23:31:17.300888_5088",
+      "emoji": "🎮",
+      "name": "打游戏勿扰券（5小时）",
+      "triggered_at": "2026-05-13T23:31:17.300895",
+      "status": "collected",
+      "collected_at": "2026-05-13T23:31:52.857857"
     }
   ],
   "used_card_lib": [
