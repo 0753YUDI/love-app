@@ -1,6 +1,14 @@
 {
-  "balance": 201050.1,
+  "balance": 202050.1,
   "records": [
+    {
+      "id": "2026-05-13T23:31:17.300864",
+      "delta": 1000,
+      "balance_after": 202050.1,
+      "reason": "测试",
+      "operator": "耶公主",
+      "timestamp": "2026-05-13T23:31:17.300872"
+    },
     {
       "id": "2026-05-13T23:29:03.398372",
       "delta": 1000,
@@ -74,9 +82,15 @@
       "timestamp": "2026-05-13T23:16:53.598510"
     }
   ],
-  "last_milestone": 201000,
-  "coin_notif": false,
-  "pending_reward": null,
+  "last_milestone": 202000,
+  "coin_notif": true,
+  "pending_reward": {
+    "id": "2026-05-13T23:31:17.300888_5088",
+    "emoji": "🎮",
+    "name": "打游戏勿扰券（5小时）",
+    "triggered_at": "2026-05-13T23:31:17.300895",
+    "status": "pending"
+  },
   "card_lib": [
     {
       "id": "2026-05-13T23:29:03.398406_4445",
