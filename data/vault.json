@@ -1,6 +1,14 @@
 {
-  "balance": 196050.1,
+  "balance": 197050.1,
   "records": [
+    {
+      "id": "2026-05-13T23:28:18.352238",
+      "delta": 1000,
+      "balance_after": 197050.1,
+      "reason": "测试",
+      "operator": "耶公主",
+      "timestamp": "2026-05-13T23:28:18.352247"
+    },
     {
       "id": "2026-05-13T23:25:33.800250",
       "delta": 50,
@@ -35,7 +43,7 @@
     }
   ],
   "last_milestone": 200000,
-  "coin_notif": false,
+  "coin_notif": true,
   "pending_reward": null,
   "card_lib": [],
   "used_card_lib": []
