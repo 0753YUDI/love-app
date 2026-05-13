@@ -75,14 +75,17 @@
     }
   ],
   "last_milestone": 201000,
-  "coin_notif": true,
-  "pending_reward": {
-    "id": "2026-05-13T23:29:03.398406_4445",
-    "emoji": "🦶",
-    "name": "洗脚券一张",
-    "triggered_at": "2026-05-13T23:29:03.398418",
-    "status": "pending"
-  },
-  "card_lib": [],
+  "coin_notif": false,
+  "pending_reward": null,
+  "card_lib": [
+    {
+      "id": "2026-05-13T23:29:03.398406_4445",
+      "emoji": "🦶",
+      "name": "洗脚券一张",
+      "triggered_at": "2026-05-13T23:29:03.398418",
+      "status": "collected",
+      "collected_at": "2026-05-13T23:29:38.552482"
+    }
+  ],
   "used_card_lib": []
 }
