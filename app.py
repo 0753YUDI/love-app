@@ -2,7 +2,7 @@
 
 """
 💕 我们的故事 - 情侣互动 App（双端版）
-支持：云端数据同步、信箱、每日一问（身份隔离）、约会计划、恋爱小说、今天吃什么
+支持：云端数据同步、信箱、每日一问（身份隔离）、约会计划、恋爱小说、今天吃什么、耶耶币保险箱
 """
 
 import streamlit as st
@@ -12,6 +12,7 @@ import json
 import os
 import hashlib
 import base64
+import random
 
 # ════════════════════════════════════════════════════════════════════
 # 💾 本地配置持久化（GitHub Token / API Key 自动记住）
@@ -353,6 +354,119 @@ details > summary::-webkit-details-marker {
 }
 .status-done { background: #d4f0d4; color: #2a6a3a !important; }
 .status-wait { background: #fde8ec; color: #9a3050 !important; }
+
+/* 耶耶币保险箱样式 */
+.vault-card {
+    background: linear-gradient(135deg, #fff8e1, #fff3e0);
+    border: 2px solid #f0c040;
+    border-radius: 20px;
+    padding: 24px;
+    text-align: center;
+    box-shadow: 0 6px 24px rgba(240,192,64,0.18);
+    margin-bottom: 16px;
+}
+.vault-balance {
+    font-family: 'Pacifico', cursive;
+    font-size: 3rem;
+    color: #c07800 !important;
+    margin: 8px 0;
+}
+.vault-label {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 0.9rem;
+    color: #a06020 !important;
+    letter-spacing: 2px;
+}
+.vault-bar-wrap {
+    background: #f5e8c0;
+    border-radius: 20px;
+    height: 18px;
+    margin: 12px 0 4px 0;
+    overflow: hidden;
+}
+.vault-bar-fill {
+    background: linear-gradient(90deg, #f0c040, #e08000);
+    height: 18px;
+    border-radius: 20px;
+    transition: width 0.5s;
+}
+.coin-record {
+    background: rgba(255,255,255,0.88);
+    border-left: 4px solid #f0c040;
+    border-radius: 0 12px 12px 0;
+    padding: 10px 16px;
+    margin: 8px 0;
+    font-size: 0.92rem;
+    color: #4a2030 !important;
+}
+.coin-add { border-left-color: #4caf50 !important; }
+.coin-sub { border-left-color: #e53935 !important; }
+
+/* 奖励卡样式 */
+.reward-card {
+    background: linear-gradient(135deg, #ffe8f8, #fff0e8);
+    border: 2.5px solid #e078c0;
+    border-radius: 20px;
+    padding: 28px 22px;
+    text-align: center;
+    box-shadow: 0 8px 28px rgba(224,120,192,0.22);
+    margin-bottom: 14px;
+    animation: cardDrop 0.6s ease;
+}
+@keyframes cardDrop {
+    0% { transform: translateY(-30px) scale(0.9); opacity: 0; }
+    100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+.reward-card-title {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 1.22rem;
+    color: #8b1a70 !important;
+    font-weight: 700;
+    margin: 8px 0;
+}
+.reward-card-badge {
+    font-size: 2.2rem;
+    margin-bottom: 6px;
+}
+
+/* 卡库卡片样式 */
+.collected-card {
+    background: rgba(255,255,255,0.9);
+    border: 1.5px solid #e078c0;
+    border-radius: 14px;
+    padding: 14px 18px;
+    margin: 8px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.collected-card.used {
+    opacity: 0.55;
+    border-color: #ccc !important;
+    background: #f5f5f5;
+}
+.used-card-lib {
+    background: rgba(255,255,255,0.9);
+    border: 1.5px solid #ccc;
+    border-radius: 14px;
+    padding: 14px 18px;
+    margin: 8px 0;
+    opacity: 0.7;
+}
+
+/* 通知横幅 */
+.notif-banner {
+    background: linear-gradient(135deg, #ffe0f5, #fff0e8);
+    border: 2px solid #e078c0;
+    border-radius: 16px;
+    padding: 16px 22px;
+    margin: 12px 0;
+    font-family: 'Noto Serif SC', serif;
+    font-size: 1.05rem;
+    color: #8b1a70 !important;
+    text-align: center;
+    box-shadow: 0 4px 16px rgba(224,120,192,0.15);
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -405,7 +519,6 @@ class GitHubStorage:
             return False
 
 def get_storage():
-    # 优先从 Streamlit Secrets 读取（永久生效，不受重启影响）
     try:
         t = st.secrets.get("GITHUB_TOKEN", "") or st.session_state.get("github_token", "")
         o = st.secrets.get("GITHUB_OWNER", "") or st.session_state.get("github_owner", "")
@@ -434,7 +547,6 @@ def cloud_read(path, default):
         result = s.read_file(path)
         if result["success"] and result["data"]:
             return result["data"]
-    # fallback: local file
     if os.path.exists(path.replace("/", "_")):
         with open(path.replace("/", "_"), "r", encoding="utf-8") as f:
             return json.load(f)
@@ -445,7 +557,6 @@ def cloud_write(path, data, msg="update"):
     s = get_storage()
     if s:
         s.write_file(path, data, msg)
-    # also save locally as backup
     local_path = path.replace("/", "_")
     with open(local_path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
@@ -540,6 +651,18 @@ USER_B = "👑 耶公主"
 USER_A_NAME = "柴司机"
 USER_B_NAME = "耶公主"
 
+# 耶耶币奖励卡池
+REWARD_CARD_POOL = [
+    ("🖤", "女仆黑丝体验卡一张"),
+    ("💆", "一小时按摩券一张"),
+    ("🦶", "洗脚券一张"),
+    ("🎤", "耶公主献歌一曲"),
+    ("🎮", "打游戏勿扰券（5小时）"),
+    ("🐰", "兔女郎体验券一张"),
+    ("👙", "比基尼体验券一张"),
+    ("💘", "约会霸王券一张（耶公主做计划并买所有单）"),
+]
+
 # ════════════════════════════════════════════════════════════════════
 # 🔐 Session state 初始化
 # ════════════════════════════════════════════════════════════════════
@@ -571,7 +694,6 @@ if "show_partner_answer" not in st.session_state:
 if "anniversary" not in st.session_state:
     st.session_state.anniversary = date(2023, 9, 26)
 if "couple_photo_data" not in st.session_state:
-    # 从本地文件加载已保存的合照
     _photo_path = "couple_photo.bin"
     if os.path.exists(_photo_path):
         try:
@@ -581,6 +703,16 @@ if "couple_photo_data" not in st.session_state:
             st.session_state.couple_photo_data = None
     else:
         st.session_state.couple_photo_data = None
+
+# 耶耶币保险箱 session state
+if "vault_open" not in st.session_state:
+    st.session_state.vault_open = False
+if "vault_subpage" not in st.session_state:
+    st.session_state.vault_subpage = "main"  # main / card_lib / used_lib
+if "pending_reward_card" not in st.session_state:
+    st.session_state.pending_reward_card = None  # {"emoji", "name", "id", "triggered_at"}
+if "coin_notif_seen" not in st.session_state:
+    st.session_state.coin_notif_seen = True  # 柴司机侧新通知flag
 
 
 def go(page):
@@ -629,6 +761,98 @@ def save_qa_data(data):
 
 
 # ════════════════════════════════════════════════════════════════════
+# 🪙 耶耶币保险箱数据操作
+# ════════════════════════════════════════════════════════════════════
+
+VAULT_INITIAL = 200000  # 20万
+VAULT_MAX = 1000000     # 100万
+COIN_MILESTONE = 1000   # 每增加1000触发奖励卡
+
+def load_vault():
+    default = {
+        "balance": VAULT_INITIAL,
+        "records": [],           # 完整记录（只保留最新10条在这里，其余推送github）
+        "last_milestone": VAULT_INITIAL,  # 上次触发奖励时的余额（用于计算累计增长）
+        "coin_notif": False,     # 柴司机未读通知flag
+        "pending_reward": None,  # 待柴司机处理的奖励卡
+        "card_lib": [],          # 柴柴卡库（已收集的卡）
+        "used_card_lib": [],     # 耶耶已使用卡库
+    }
+    return cloud_read("data/vault.json", default)
+
+
+def save_vault(vault):
+    cloud_write("data/vault.json", vault, "🪙 耶耶币更新")
+
+
+def load_vault_archive():
+    """从 data-records 仓库加载历史记录"""
+    s = get_storage()
+    if s:
+        # 使用同一个仓库的 data-records 路径模拟
+        result = s.read_file("data-records/vault_records.json")
+        if result["success"] and result["data"]:
+            return result["data"] if isinstance(result["data"], list) else []
+    local = "data-records_vault_records.json"
+    if os.path.exists(local):
+        with open(local, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return []
+
+
+def save_vault_archive(records):
+    s = get_storage()
+    if s:
+        existing = load_vault_archive()
+        all_records = records + existing
+        s.write_file("data-records/vault_records.json", all_records, "🪙 耶耶币历史记录")
+    local = "data-records_vault_records.json"
+    with open(local, "w", encoding="utf-8") as f:
+        json.dump(records, f, ensure_ascii=False, indent=2)
+
+
+def add_vault_record(vault, delta, reason, operator):
+    """添加记录，保持本地最多10条，其余归档"""
+    record = {
+        "id": datetime.now().isoformat(),
+        "delta": delta,
+        "balance_after": vault["balance"],
+        "reason": reason,
+        "operator": operator,
+        "timestamp": datetime.now().isoformat(),
+    }
+    vault["records"].insert(0, record)
+    if len(vault["records"]) > 10:
+        overflow = vault["records"][10:]
+        vault["records"] = vault["records"][:10]
+        # 归档到 data-records
+        save_vault_archive(overflow)
+    return vault
+
+
+def check_reward_trigger(vault, old_balance, new_balance):
+    """检查是否触发奖励卡（累计增加达到1000的倍数）"""
+    last_ms = vault.get("last_milestone", VAULT_INITIAL)
+    # 计算从 last_milestone 到 new_balance 增加了多少
+    increase = new_balance - last_ms
+    if increase >= COIN_MILESTONE:
+        # 触发多次也只掉一张（每1000一张，这里简化为触发一张并更新里程碑）
+        times = int(increase // COIN_MILESTONE)
+        vault["last_milestone"] = last_ms + times * COIN_MILESTONE
+        card_emoji, card_name = random.choice(REWARD_CARD_POOL)
+        reward = {
+            "id": datetime.now().isoformat() + "_" + str(random.randint(1000, 9999)),
+            "emoji": card_emoji,
+            "name": card_name,
+            "triggered_at": datetime.now().isoformat(),
+            "status": "pending",  # pending / collected / dismissed
+        }
+        vault["pending_reward"] = reward
+        vault["coin_notif"] = True
+    return vault
+
+
+# ════════════════════════════════════════════════════════════════════
 # 🔐 登录页面
 # ════════════════════════════════════════════════════════════════════
 
@@ -638,7 +862,6 @@ if st.session_state.page == "login":
     st.markdown("<div class='login-title'>💕 柴耶大本营</div>", unsafe_allow_html=True)
     st.markdown("<p style='text-align:center; color:#b07080; font-size:0.95rem; margin-top:-8px;'>我们的专属空间</p>", unsafe_allow_html=True)
 
-    # 每日浪漫宣言
     decl = get_today_declaration()
     today_str = date.today().strftime("%Y年%m月%d日")
     st.markdown(f"""
@@ -648,7 +871,6 @@ if st.session_state.page == "login":
     </div>
     """, unsafe_allow_html=True)
 
-    # 身份选择
     st.markdown("<p style='color:#8b3a52; font-weight:600; margin-bottom:10px; text-align:center;'>你是谁？</p>", unsafe_allow_html=True)
     col_a, col_b = st.columns(2)
 
@@ -680,15 +902,12 @@ if st.session_state.page == "login":
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # API Key 输入
     st.markdown("<p style='color:#8b3a52; font-weight:600; margin-bottom:6px;'>🔑 DeepSeek API Key</p>", unsafe_allow_html=True)
     api_input = st.text_input("api_key_input", type="password",
                                placeholder="sk-xxxxx（用于AI功能）" if not st.session_state.api_key else "已保存 ✓（如需修改请重新输入）",
                                label_visibility="collapsed", key="api_key_field")
 
-    # GitHub 同步配置（折叠）
     with st.expander("🌥️ 云端同步配置（可选，用于双设备同步）"):
-        # 判断是否已有保存的值
         _has_saved = bool(st.session_state.github_token and st.session_state.github_owner and st.session_state.github_repo)
         if _has_saved:
             st.success(f"✅ 已记住配置：{st.session_state.github_owner}/{st.session_state.github_repo}")
@@ -705,7 +924,6 @@ if st.session_state.page == "login":
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # 进入按钮
     can_enter = st.session_state.current_user is not None
     if can_enter:
         if st.button("💕 进入我们的小窝", use_container_width=True):
@@ -722,7 +940,6 @@ if st.session_state.page == "login":
             if gh_repo_in:
                 st.session_state.github_repo = gh_repo_in
                 _changed = True
-            # 保存到本地文件
             save_local_config({
                 "api_key": st.session_state.api_key,
                 "github_token": st.session_state.github_token,
@@ -752,7 +969,7 @@ days = days_together(anniversary)
 
 
 # ════════════════════════════════════════════════════════════════════
-# 📬 信箱浮窗（右下角，全局显示）
+# 📬 信箱浮窗（右下角，全局显示）+ 🪙 耶耶币保险箱按钮
 # ════════════════════════════════════════════════════════════════════
 
 unread = get_unread_count(current_user)
@@ -761,13 +978,13 @@ def render_mailbox_fab():
     fab_label = f"💗 New message ({unread})" if unread > 0 else "💌 信箱"
     if st.button(fab_label, key="mailbox_fab"):
         st.session_state.mailbox_open = not st.session_state.mailbox_open
+        st.session_state.vault_open = False
         if st.session_state.mailbox_open:
             mark_all_read(current_user)
         st.rerun()
 
-# 用 columns 把信箱 FAB 推到右侧
 if st.session_state.page != "login":
-    top_col1, top_col2, top_col3 = st.columns([6, 2, 2])
+    top_col1, top_col2, top_col3, top_col4 = st.columns([5, 2, 2, 2])
     with top_col1:
         st.markdown(f"<span style='color:#c0395a; font-size:0.9rem; font-weight:600;'>👤 {current_user}</span>", unsafe_allow_html=True)
     with top_col2:
@@ -777,6 +994,17 @@ if st.session_state.page != "login":
             st.rerun()
     with top_col3:
         render_mailbox_fab()
+    with top_col4:
+        # 耶耶币保险箱按钮（柴司机有通知提示）
+        vault_data_for_notif = load_vault()
+        has_coin_notif = is_a and vault_data_for_notif.get("coin_notif", False)
+        has_pending_reward = is_a and vault_data_for_notif.get("pending_reward") is not None
+        vault_btn_label = "🔔 耶耶保险箱" if (has_coin_notif or has_pending_reward) else "🏦 耶耶保险箱"
+        if st.button(vault_btn_label, key="vault_fab"):
+            st.session_state.vault_open = not st.session_state.vault_open
+            st.session_state.mailbox_open = False
+            st.session_state.vault_subpage = "main"
+            st.rerun()
 
 
 # ════════════════════════════════════════════════════════════════════
@@ -788,7 +1016,6 @@ if st.session_state.mailbox_open:
         st.markdown(f"#### 💌 我们的信箱")
         msgs = load_messages()
 
-        # 发消息
         new_msg = st.text_area("给 ta 写点什么...", height=90, key="new_msg_input",
                                 placeholder=f"亲爱的{partner_name}，我想告诉你...")
         col_send, col_close = st.columns([3, 1])
@@ -812,13 +1039,11 @@ if st.session_state.mailbox_open:
                 st.session_state.mailbox_open = False
                 st.rerun()
 
-        # 展示收到的消息
         received = [m for m in msgs if m.get("to") == current_user]
         sent = [m for m in msgs if m.get("from") == current_user]
 
         if received or sent:
             st.markdown("---")
-            # 合并排序展示对话流
             all_msgs = [(m, "received") for m in received] + [(m, "sent") for m in sent]
             all_msgs.sort(key=lambda x: x[0]["timestamp"])
             for m, mtype in all_msgs:
@@ -840,6 +1065,303 @@ if st.session_state.mailbox_open:
 
 
 # ════════════════════════════════════════════════════════════════════
+# 🏦 耶耶币保险箱面板（展开时显示）
+# ════════════════════════════════════════════════════════════════════
+
+if st.session_state.vault_open:
+    vault = load_vault()
+    balance = vault.get("balance", VAULT_INITIAL)
+    records = vault.get("records", [])
+    card_lib = vault.get("card_lib", [])
+    used_card_lib = vault.get("used_card_lib", [])
+    pending_reward = vault.get("pending_reward")
+
+    with st.container():
+        vsp = st.session_state.vault_subpage
+
+        # ── 顶部 Tab 导航 ──
+        v_col_main, v_col_card, v_col_used, v_col_close = st.columns([2, 2, 2, 1])
+        with v_col_main:
+            if st.button("🏦 保险箱", key="vault_tab_main", use_container_width=True):
+                st.session_state.vault_subpage = "main"
+                st.rerun()
+        with v_col_card:
+            # 柴司机可见卡库，耶公主不显示
+            if is_a:
+                collected_count = len([c for c in card_lib if c.get("status") != "used"])
+                if st.button(f"🃏 柴柴卡库({collected_count})", key="vault_tab_cards", use_container_width=True):
+                    st.session_state.vault_subpage = "card_lib"
+                    # 清除通知
+                    if vault.get("coin_notif"):
+                        vault["coin_notif"] = False
+                        save_vault(vault)
+                    st.rerun()
+        with v_col_used:
+            # 已使用卡库：耶公主看自己的，柴司机也可以看
+            used_label = "📦 已使用卡库" if not is_a else "📦 已用卡"
+            if st.button(used_label, key="vault_tab_used", use_container_width=True):
+                st.session_state.vault_subpage = "used_lib"
+                st.rerun()
+        with v_col_close:
+            if st.button("✕", key="close_vault"):
+                st.session_state.vault_open = False
+                st.rerun()
+
+        st.markdown("---")
+
+        # ════ 主页面：余额 + 操作 ════
+        if vsp == "main":
+            # 余额展示
+            pct = min(balance / VAULT_MAX, 1.0)
+            bar_width = int(pct * 100)
+            st.markdown(f"""
+            <div class="vault-card">
+                <div class="vault-label">✦ 耶耶币保险箱 ✦</div>
+                <div class="vault-balance">🪙 {balance:,.1f}</div>
+                <div class="vault-label">当前余额（最高 {VAULT_MAX//10000}万）</div>
+                <div class="vault-bar-wrap">
+                    <div class="vault-bar-fill" style="width:{bar_width}%;"></div>
+                </div>
+                <div style="font-size:0.78rem; color:#a06020;">{balance/VAULT_MAX*100:.1f}% · 距离满库还差 {(VAULT_MAX-balance):,.0f} 个</div>
+            </div>
+            """, unsafe_allow_html=True)
+
+            # 柴司机：显示通知提示 + 奖励卡
+            if is_a:
+                if vault.get("coin_notif", False):
+                    st.markdown("""
+                    <div class="notif-banner">
+                        🔔 耶耶币数量更新提示🔔<br>
+                        <span style="font-size:0.88rem;">耶公主刚刚操作了耶耶币，快去看看余额！</span>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+                if pending_reward:
+                    st.markdown(f"""
+                    <div class="reward-card">
+                        <div class="reward-card-badge">{pending_reward['emoji']}</div>
+                        <div class="reward-card-title">🎉 奖励卡掉落！</div>
+                        <div style="font-size:1.05rem; color:#6a0050 !important; margin:8px 0;">【{pending_reward['name']}】</div>
+                        <div style="font-size:0.8rem; color:#a06080;">耶耶币每增加1000触发一次～</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    c_yes, c_no = st.columns(2)
+                    with c_yes:
+                        if st.button("💝 收集入库", key="collect_card", use_container_width=True):
+                            card_entry = dict(pending_reward)
+                            card_entry["status"] = "collected"
+                            card_entry["collected_at"] = datetime.now().isoformat()
+                            vault["card_lib"].append(card_entry)
+                            vault["pending_reward"] = None
+                            vault["coin_notif"] = False
+                            save_vault(vault)
+                            st.success("✅ 已收入柴柴卡库！")
+                            st.rerun()
+                    with c_no:
+                        if st.button("🙅 不感兴趣", key="dismiss_card", use_container_width=True):
+                            vault["pending_reward"] = None
+                            vault["coin_notif"] = False
+                            save_vault(vault)
+                            st.rerun()
+
+            # 耶公主：操作区
+            if not is_a:
+                st.markdown("#### 👑 耶公主操作台")
+                op_tab1, op_tab2 = st.tabs(["➕ 添加耶耶币", "➖ 扣除耶耶币"])
+
+                with op_tab1:
+                    add_amounts = [0.1, 50, 100, 200, 500, 1000]
+                    st.markdown("选择添加量：")
+                    add_cols = st.columns(len(add_amounts))
+                    selected_add = None
+                    for i, amt in enumerate(add_amounts):
+                        with add_cols[i]:
+                            label = f"+{int(amt)}" if amt >= 1 else f"+{amt}"
+                            if st.button(label, key=f"add_{amt}", use_container_width=True):
+                                st.session_state["vault_selected_add"] = amt
+                    selected_add = st.session_state.get("vault_selected_add")
+                    if selected_add is not None:
+                        st.markdown(f"**准备添加：{selected_add} 个耶耶币**")
+                        add_reason = st.text_input("📝 添加理由（必填）", key="add_reason_input",
+                                                    placeholder="例如：今天表现很棒！")
+                        if st.button("✅ 确认添加", key="confirm_add", use_container_width=True):
+                            if not add_reason.strip():
+                                st.warning("请填写理由哦～")
+                            elif balance + selected_add > VAULT_MAX:
+                                st.warning(f"⚠️ 超过最高值 {VAULT_MAX//10000}万，无法添加！")
+                            else:
+                                old_bal = balance
+                                vault["balance"] = round(balance + selected_add, 1)
+                                vault = add_vault_record(vault, +selected_add, add_reason.strip(), USER_B_NAME)
+                                vault = check_reward_trigger(vault, old_bal, vault["balance"])
+                                vault["coin_notif"] = True
+                                save_vault(vault)
+                                st.session_state.pop("vault_selected_add", None)
+                                st.success(f"✅ 已添加 {selected_add} 个耶耶币！当前余额：{vault['balance']:,.1f}")
+                                st.rerun()
+
+                with op_tab2:
+                    sub_amounts = [10000, 5000, 2000, 1000, 500, 0.1]
+                    st.markdown("选择扣除量：")
+                    sub_cols = st.columns(len(sub_amounts))
+                    for i, amt in enumerate(sub_amounts):
+                        with sub_cols[i]:
+                            label = f"-{int(amt/10000)}万" if amt >= 10000 else (f"-{int(amt)}" if amt >= 1 else f"-{amt}")
+                            if st.button(label, key=f"sub_{amt}", use_container_width=True):
+                                st.session_state["vault_selected_sub"] = amt
+                    selected_sub = st.session_state.get("vault_selected_sub")
+                    if selected_sub is not None:
+                        st.markdown(f"**准备扣除：{selected_sub} 个耶耶币**")
+                        sub_reason = st.text_input("📝 扣除理由（必填）", key="sub_reason_input",
+                                                    placeholder="例如：今天迟到了...")
+                        if st.button("✅ 确认扣除", key="confirm_sub", use_container_width=True):
+                            if not sub_reason.strip():
+                                st.warning("请填写理由哦～")
+                            elif balance - selected_sub < 0:
+                                st.warning("⚠️ 耶耶币不够扣哦！")
+                            else:
+                                vault["balance"] = round(balance - selected_sub, 1)
+                                vault = add_vault_record(vault, -selected_sub, sub_reason.strip(), USER_B_NAME)
+                                vault["coin_notif"] = True
+                                save_vault(vault)
+                                st.session_state.pop("vault_selected_sub", None)
+                                st.success(f"✅ 已扣除 {selected_sub} 个耶耶币！当前余额：{vault['balance']:,.1f}")
+                                st.rerun()
+
+            # 记录列表（最多10条）
+            st.markdown("#### 📋 最近记录")
+            if records:
+                for rec in records[:10]:
+                    delta = rec.get("delta", 0)
+                    sign = "+" if delta > 0 else ""
+                    cls = "coin-add" if delta > 0 else "coin-sub"
+                    ts = datetime.fromisoformat(rec["timestamp"]).strftime("%m-%d %H:%M")
+                    st.markdown(f"""
+                    <div class="coin-record {cls}">
+                        <b>{sign}{delta}</b> 个 &nbsp;·&nbsp; {rec.get('reason','—')} &nbsp;·&nbsp; 余额 {rec.get('balance_after',0):,.1f}
+                        <span style="float:right; font-size:0.78rem; color:#a06080;">{ts}</span>
+                    </div>
+                    """, unsafe_allow_html=True)
+            else:
+                st.info("暂无操作记录～")
+
+        # ════ 柴柴卡库 ════
+        elif vsp == "card_lib":
+            if not is_a:
+                st.warning("柴柴卡库只有柴司机可以查看哦 🚗")
+            else:
+                st.markdown("#### 🃏 柴柴卡库")
+                vault = load_vault()  # 刷新
+                card_lib = vault.get("card_lib", [])
+                if not card_lib:
+                    st.info("卡库暂时空空的，快去积攒耶耶币解锁奖励卡吧！🪙")
+                else:
+                    for idx, card in enumerate(card_lib):
+                        is_used = card.get("status") == "used"
+                        used_cls = "collected-card used" if is_used else "collected-card"
+                        used_label = "（已使用）" if is_used else ""
+                        col_card, col_use = st.columns([5, 2])
+                        with col_card:
+                            st.markdown(f"""
+                            <div class="{used_cls}">
+                                <span style="font-size:1.5rem;">{card['emoji']}</span>
+                                &nbsp;&nbsp;<b>{card['name']}</b> {used_label}
+                                <br><span style="font-size:0.75rem; color:#a06080;">收集于 {datetime.fromisoformat(card['collected_at']).strftime('%m-%d %H:%M') if card.get('collected_at') else ''}</span>
+                            </div>
+                            """, unsafe_allow_html=True)
+                        with col_use:
+                            if not is_used:
+                                if st.button("📤 使用并发送", key=f"use_card_{idx}", use_container_width=True):
+                                    # 标记为已使用，并发送通知给耶公主
+                                    vault["card_lib"][idx]["status"] = "used"
+                                    vault["card_lib"][idx]["used_at"] = datetime.now().isoformat()
+                                    # 在 used_card_lib 中为耶公主放一条待确认记录
+                                    sent_card = dict(card)
+                                    sent_card["status"] = "sent"
+                                    sent_card["sent_at"] = datetime.now().isoformat()
+                                    vault["used_card_lib"].append(sent_card)
+                                    save_vault(vault)
+                                    st.success(f"✅ 已发送【{card['name']}】给耶公主！")
+                                    st.rerun()
+
+        # ════ 已使用卡库 ════
+        elif vsp == "used_lib":
+            if is_a:
+                st.markdown("#### 📦 已使用卡库（柴司机视角）")
+                vault = load_vault()
+                used_lib = vault.get("used_card_lib", [])
+                done = [c for c in used_lib if c.get("status") == "archived"]
+                pending_sent = [c for c in used_lib if c.get("status") == "sent"]
+                if pending_sent:
+                    st.markdown("**📬 已发给耶公主待确认：**")
+                    for c in pending_sent:
+                        st.markdown(f"""
+                        <div class="used-card-lib">
+                            {c['emoji']} <b>{c['name']}</b> — 等待耶公主填写使用时间...
+                        </div>
+                        """, unsafe_allow_html=True)
+                if done:
+                    st.markdown("**✅ 已完成：**")
+                    for c in done:
+                        st.markdown(f"""
+                        <div class="used-card-lib">
+                            {c['emoji']} <b>{c['name']}</b>
+                            <br><span style="font-size:0.78rem; color:#a06080;">使用时间：{c.get('use_time','未记录')}</span>
+                        </div>
+                        """, unsafe_allow_html=True)
+                if not pending_sent and not done:
+                    st.info("还没有使用过的卡哦～")
+
+            else:
+                # 耶公主：确认收到的卡，填写使用时间，存入已使用卡库
+                st.markdown("#### 📦 耶耶已使用卡库（耶公主）")
+                vault = load_vault()
+                used_lib = vault.get("used_card_lib", [])
+                pending_for_princess = [(i, c) for i, c in enumerate(used_lib) if c.get("status") == "sent"]
+                archived = [c for c in used_lib if c.get("status") == "archived"]
+
+                if pending_for_princess:
+                    st.markdown("**📬 柴司机发来的卡，请填写使用时间后存入：**")
+                    for i, card in pending_for_princess:
+                        st.markdown(f"""
+                        <div class="reward-card" style="margin-bottom:8px;">
+                            <div class="reward-card-badge">{card['emoji']}</div>
+                            <div class="reward-card-title">{card['name']}</div>
+                        </div>
+                        """, unsafe_allow_html=True)
+                        use_time_input = st.text_input(
+                            "📅 使用时间（如：2025年5月20日晚上）",
+                            key=f"use_time_{i}",
+                            placeholder="请填写具体使用时间"
+                        )
+                        if st.button(f"✅ 存入已使用卡库", key=f"archive_card_{i}", use_container_width=True):
+                            if not use_time_input.strip():
+                                st.warning("请填写使用时间哦～")
+                            else:
+                                vault["used_card_lib"][i]["status"] = "archived"
+                                vault["used_card_lib"][i]["use_time"] = use_time_input.strip()
+                                vault["used_card_lib"][i]["archived_at"] = datetime.now().isoformat()
+                                save_vault(vault)
+                                st.success("✅ 已存入已使用卡库！")
+                                st.rerun()
+
+                if archived:
+                    st.markdown("**✅ 已存档记录：**")
+                    for c in archived:
+                        st.markdown(f"""
+                        <div class="used-card-lib">
+                            {c['emoji']} <b>{c['name']}</b>
+                            <br><span style="font-size:0.78rem; color:#a06080;">使用时间：{c.get('use_time','未记录')}</span>
+                        </div>
+                        """, unsafe_allow_html=True)
+
+                if not pending_for_princess and not archived:
+                    st.info("还没有收到使用中的卡哦～")
+
+    st.markdown("---")
+
+
+# ════════════════════════════════════════════════════════════════════
 # 🏠 首页
 # ════════════════════════════════════════════════════════════════════
 
@@ -847,7 +1369,6 @@ if st.session_state.page == "home":
     st.markdown(f"<h1 style='text-align:center; font-size:2.6rem;'>💕 {USER_A_NAME} & {USER_B_NAME}</h1>", unsafe_allow_html=True)
     st.markdown(f"<p style='text-align:center; color:#9a6070; font-size:1.05rem;'>今天是 {date.today().strftime('%Y年%m月%d日')} · 在一起第 <b style='color:#c0395a;'>{days}</b> 天 🌹</p>", unsafe_allow_html=True)
 
-    # 纪念日设置（小字）
     with st.expander("⚙️ 设置纪念日 / API / 云端同步"):
         col_s1, col_s2 = st.columns(2)
         with col_s1:
@@ -892,7 +1413,6 @@ if st.session_state.page == "home":
 
     st.markdown('<div class="love-divider">✦ ♥ ✦ ♥ ✦</div>', unsafe_allow_html=True)
 
-    # 功能卡片 2x2 + 1 (信箱在右下角FAB，不在这里)
     col1, col2 = st.columns(2)
 
     with col1:
@@ -1003,7 +1523,6 @@ if st.session_state.page == "home":
         margin-top: 6px;
     }
 
-    /* 隐藏 file_uploader 按钮内的 icon 文字 */
     [data-testid="stFileUploaderDropzoneInstructions"] span[data-testid="stIconMaterial"],
     [data-testid="stFileUploadDropzone"] span[data-testid="stIconMaterial"] {
         visibility: hidden !important;
@@ -1011,7 +1530,6 @@ if st.session_state.page == "home":
         width: 0 !important;
     }
 
-    /* 隐藏顶部白色输入框 */
     [data-testid="stTextInput"] input,
     [data-testid="stTextInput"] > div > div {
         background: transparent !important;
@@ -1030,7 +1548,6 @@ if st.session_state.page == "home":
         if uploaded_photo:
             photo_bytes = uploaded_photo.read()
             st.session_state.couple_photo_data = photo_bytes
-            # 持久化保存到本地文件
             try:
                 with open("couple_photo.bin", "wb") as _f:
                     _f.write(photo_bytes)
@@ -1069,7 +1586,6 @@ if st.session_state.page == "home":
             uk_now = now_utc.astimezone(uk_tz)
             hk_now = now_utc.astimezone(hk_tz)
         else:
-            # fallback: UK = UTC, HK = UTC+8
             from datetime import timedelta
             uk_now = now_utc
             hk_now = now_utc + timedelta(hours=8)
@@ -1095,7 +1611,6 @@ if st.session_state.page == "home":
             else:
                 return f"夜深了，{name}还没睡？快去休息吧 😴"
 
-        # 星期几中文
         weekday_cn = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"]
         uk_wd = weekday_cn[uk_now.weekday()]
         hk_wd = weekday_cn[hk_now.weekday()]
@@ -1379,7 +1894,6 @@ elif st.session_state.page == "food":
             with st.spinner("🍳 帮你们想今天吃什么..."):
                 try:
                     result = chat(client, prompt, max_tokens=800)
-                    # 清理多余的 markdown 符号
                     import re
                     result = re.sub(r'#+\s*', '', result)
                     result = re.sub(r'\*{1,3}', '', result)
@@ -1410,11 +1924,9 @@ elif st.session_state.page == "daily_qa":
     client = get_client()
     today_key = date.today().isoformat()
 
-    # 加载今日问答数据
     qa_data = load_qa_data()
     today_qa = qa_data.get(today_key, {"question": "", "answers": {}, "ai_comment": ""})
 
-    # 生成今日问题（如果没有）
     if not today_qa.get("question"):
         if client:
             seed = get_daily_question_seed()
@@ -1447,7 +1959,6 @@ elif st.session_state.page == "daily_qa":
     partner_answered = partner_answer_key in answers
     both_answered = my_answered and partner_answered
 
-    # 显示问题
     today_str = date.today().strftime("%Y年%m月%d日")
     st.markdown(f"""
     <div class="daily-question">
@@ -1458,7 +1969,6 @@ elif st.session_state.page == "daily_qa":
 
     st.markdown('<div class="love-divider">♥ ♥ ♥</div>', unsafe_allow_html=True)
 
-    # 对方状态提示
     if partner_answered:
         st.markdown(f"""<span class='status-chip status-done'>✅ {partner_name} 已回答</span>
         {'&nbsp;&nbsp;<span class="status-chip status-done">🔓 你也回答后可以查看对方答案</span>' if not my_answered else ''}
@@ -1471,7 +1981,6 @@ elif st.session_state.page == "daily_qa":
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # 我的回答区域
     if not my_answered:
         st.markdown(f"#### ✏️ {current_user} 的回答")
         my_input = st.text_area("", placeholder="写下你对这个问题的想法...", height=130,
@@ -1497,7 +2006,6 @@ elif st.session_state.page == "daily_qa":
         </div>
         """, unsafe_allow_html=True)
 
-    # 查看对方答案（必须自己先回答）
     if both_answered:
         st.markdown('<div class="love-divider">✦ ♥ ✦</div>', unsafe_allow_html=True)
         st.markdown("### 💕 你们的回答")
@@ -1517,7 +2025,6 @@ elif st.session_state.page == "daily_qa":
             </div>
             """, unsafe_allow_html=True)
 
-        # AI 分析
         st.markdown('<div class="love-divider">✦ ♥ ✦</div>', unsafe_allow_html=True)
 
         existing_comment = today_qa.get("ai_comment", "")
@@ -1565,7 +2072,6 @@ elif st.session_state.page == "daily_qa":
     elif my_answered and not partner_answered:
         st.info(f"💕 你已经回答了！等 {partner_name} 也回答之后，你们就可以互相看答案，并让 AI 分析啦～")
 
-    # 历史记录
     history_items = [(k, v) for k, v in qa_data.items() if k != today_key and v.get("question")]
     if history_items:
         history_items.sort(key=lambda x: x[0], reverse=True)
@@ -1578,7 +2084,6 @@ elif st.session_state.page == "daily_qa":
                 st.caption(f"👑 {USER_B_NAME}：{ans_b}")
                 st.divider()
 
-    # 重置
     if st.button("🔄 重置今日问答", help="清空今日回答重新开始"):
         qa_data.pop(today_key, None)
         save_qa_data(qa_data)
