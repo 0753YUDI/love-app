@@ -1,0 +1,18 @@
+{
+  "balance": 195000,
+  "records": [
+    {
+      "id": "2026-05-13T23:16:53.598501",
+      "delta": -5000,
+      "balance_after": 195000,
+      "reason": "坏柴....都怪你ToT",
+      "operator": "耶公主",
+      "timestamp": "2026-05-13T23:16:53.598510"
+    }
+  ],
+  "last_milestone": 200000,
+  "coin_notif": true,
+  "pending_reward": null,
+  "card_lib": [],
+  "used_card_lib": []
+}
