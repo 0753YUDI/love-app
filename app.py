@@ -404,15 +404,29 @@ class GitHubStorage:
         except Exception as e:
             return False
 
-
 def get_storage():
-    t = st.session_state.get("github_token", "")
-    o = st.session_state.get("github_owner", "")
-    r = st.session_state.get("github_repo", "")
+    # 优先从 Streamlit Secrets 读取（永久生效，不受重启影响）
+    try:
+        t = st.secrets.get("GITHUB_TOKEN", "") or st.session_state.get("github_token", "")
+        o = st.secrets.get("GITHUB_OWNER", "") or st.session_state.get("github_owner", "")
+        r = st.secrets.get("GITHUB_REPO", "") or st.session_state.get("github_repo", "")
+    except:
+        t = st.session_state.get("github_token", "")
+        o = st.session_state.get("github_owner", "")
+        r = st.session_state.get("github_repo", "")
     if t and o and r:
         return GitHubStorage(t, o, r)
     return None
 
+
+def get_client():
+    try:
+        api_key = st.secrets.get("DEEPSEEK_API_KEY", "") or st.session_state.get("api_key", "")
+    except:
+        api_key = st.session_state.get("api_key", "")
+    if not api_key:
+        return None
+    return OpenAI(api_key=api_key, base_url="https://api.deepseek.com")
 
 def cloud_read(path, default):
     s = get_storage()
