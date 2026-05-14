@@ -1,6 +1,14 @@
 {
-  "balance": 204250.1,
+  "balance": 205250.1,
   "records": [
+    {
+      "id": "2026-05-14T07:01:48.339857",
+      "delta": 1000,
+      "balance_after": 205250.1,
+      "reason": "就是爱你爱着你～",
+      "operator": "耶公主",
+      "timestamp": "2026-05-14T07:01:48.339865"
+    },
     {
       "id": "2026-05-14T06:59:52.773127",
       "delta": 500,
@@ -72,23 +80,15 @@
       "reason": "测试",
       "operator": "耶公主",
       "timestamp": "2026-05-13T23:28:25.990300"
-    },
-    {
-      "id": "2026-05-13T23:28:18.352238",
-      "delta": 1000,
-      "balance_after": 197050.1,
-      "reason": "测试",
-      "operator": "耶公主",
-      "timestamp": "2026-05-13T23:28:18.352247"
     }
   ],
-  "last_milestone": 204000,
-  "coin_notif": false,
+  "last_milestone": 205000,
+  "coin_notif": true,
   "pending_reward": {
-    "id": "2026-05-14T06:59:53.800007_3379",
-    "emoji": "🦶",
-    "name": "洗脚券一张",
-    "triggered_at": "2026-05-14T06:59:53.800027",
+    "id": "2026-05-14T07:01:49.511031_6431",
+    "emoji": "🖤",
+    "name": "女仆黑丝体验卡一张",
+    "triggered_at": "2026-05-14T07:01:49.511048",
     "status": "pending"
   },
   "card_lib": [
