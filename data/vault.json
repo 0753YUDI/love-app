@@ -1,6 +1,14 @@
 {
-  "balance": 203750.1,
+  "balance": 204250.1,
   "records": [
+    {
+      "id": "2026-05-14T06:59:52.773127",
+      "delta": 500,
+      "balance_after": 204250.1,
+      "reason": "嘿嘿爱你",
+      "operator": "耶公主",
+      "timestamp": "2026-05-14T06:59:52.773133"
+    },
     {
       "id": "2026-05-14T06:59:37.313936",
       "delta": 500,
@@ -72,23 +80,15 @@
       "reason": "测试",
       "operator": "耶公主",
       "timestamp": "2026-05-13T23:28:18.352247"
-    },
-    {
-      "id": "2026-05-13T23:25:33.800250",
-      "delta": 50,
-      "balance_after": 196050.1,
-      "reason": "依旧功能测试",
-      "operator": "耶公主",
-      "timestamp": "2026-05-13T23:25:33.800256"
     }
   ],
-  "last_milestone": 203000,
+  "last_milestone": 204000,
   "coin_notif": true,
   "pending_reward": {
-    "id": "2026-05-14T06:59:25.249185_8818",
-    "emoji": "🎮",
-    "name": "打游戏勿扰券（5小时）",
-    "triggered_at": "2026-05-14T06:59:25.249203",
+    "id": "2026-05-14T06:59:53.800007_3379",
+    "emoji": "🦶",
+    "name": "洗脚券一张",
+    "triggered_at": "2026-05-14T06:59:53.800027",
     "status": "pending"
   },
   "card_lib": [
