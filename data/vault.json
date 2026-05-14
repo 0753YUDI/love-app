@@ -1,6 +1,14 @@
 {
-  "balance": 202250.1,
+  "balance": 203250.1,
   "records": [
+    {
+      "id": "2026-05-14T06:59:24.199884",
+      "delta": 1000,
+      "balance_after": 203250.1,
+      "reason": "没什么理由就是爱你",
+      "operator": "耶公主",
+      "timestamp": "2026-05-14T06:59:24.199893"
+    },
     {
       "id": "2026-05-13T23:31:33.831833",
       "delta": 200,
@@ -72,19 +80,17 @@
       "reason": "这个是为了功能测试哼哼",
       "operator": "耶公主",
       "timestamp": "2026-05-13T23:24:12.218964"
-    },
-    {
-      "id": "2026-05-13T23:17:38.017155",
-      "delta": 0.1,
-      "balance_after": 195000.1,
-      "reason": "但是看在你那么努力哄我的份上给你加回一点",
-      "operator": "耶公主",
-      "timestamp": "2026-05-13T23:17:38.017162"
     }
   ],
-  "last_milestone": 202000,
-  "coin_notif": false,
-  "pending_reward": null,
+  "last_milestone": 203000,
+  "coin_notif": true,
+  "pending_reward": {
+    "id": "2026-05-14T06:59:25.249185_8818",
+    "emoji": "🎮",
+    "name": "打游戏勿扰券（5小时）",
+    "triggered_at": "2026-05-14T06:59:25.249203",
+    "status": "pending"
+  },
   "card_lib": [
     {
       "id": "2026-05-13T23:29:03.398406_4445",
