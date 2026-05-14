@@ -84,13 +84,7 @@
   ],
   "last_milestone": 205000,
   "coin_notif": false,
-  "pending_reward": {
-    "id": "2026-05-14T07:01:49.511031_6431",
-    "emoji": "🖤",
-    "name": "女仆黑丝体验卡一张",
-    "triggered_at": "2026-05-14T07:01:49.511048",
-    "status": "pending"
-  },
+  "pending_reward": null,
   "card_lib": [
     {
       "id": "2026-05-13T23:29:03.398406_4445",
@@ -108,6 +102,14 @@
       "triggered_at": "2026-05-13T23:31:17.300895",
       "status": "collected",
       "collected_at": "2026-05-13T23:31:52.857857"
+    },
+    {
+      "id": "2026-05-14T07:01:49.511031_6431",
+      "emoji": "🖤",
+      "name": "女仆黑丝体验卡一张",
+      "triggered_at": "2026-05-14T07:01:49.511048",
+      "status": "collected",
+      "collected_at": "2026-05-14T07:03:44.388520"
     }
   ],
   "used_card_lib": [
