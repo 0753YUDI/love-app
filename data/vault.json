@@ -1,6 +1,14 @@
 {
-  "balance": 205250.1,
+  "balance": 206250.1,
   "records": [
+    {
+      "id": "2026-05-14T15:03:56.620677",
+      "delta": 1000,
+      "balance_after": 206250.1,
+      "reason": "德扑♠️赢我哼哼",
+      "operator": "耶公主",
+      "timestamp": "2026-05-14T15:03:56.620687"
+    },
     {
       "id": "2026-05-14T07:01:48.339857",
       "delta": 1000,
@@ -72,19 +80,17 @@
       "reason": "测试",
       "operator": "耶公主",
       "timestamp": "2026-05-13T23:28:36.025455"
-    },
-    {
-      "id": "2026-05-13T23:28:25.990294",
-      "delta": 1000,
-      "balance_after": 198050.1,
-      "reason": "测试",
-      "operator": "耶公主",
-      "timestamp": "2026-05-13T23:28:25.990300"
     }
   ],
-  "last_milestone": 205000,
-  "coin_notif": false,
-  "pending_reward": null,
+  "last_milestone": 206000,
+  "coin_notif": true,
+  "pending_reward": {
+    "id": "2026-05-14T15:03:57.767056_7863",
+    "emoji": "🎮",
+    "name": "打游戏勿扰券（5小时）",
+    "triggered_at": "2026-05-14T15:03:57.767079",
+    "status": "pending"
+  },
   "card_lib": [
     {
       "id": "2026-05-13T23:29:03.398406_4445",
