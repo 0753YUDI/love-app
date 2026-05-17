@@ -83,7 +83,7 @@
     }
   ],
   "last_milestone": 206000,
-  "coin_notif": true,
+  "coin_notif": false,
   "pending_reward": null,
   "card_lib": [
     {
