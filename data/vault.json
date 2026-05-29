@@ -1,6 +1,14 @@
 {
-  "balance": 206950.1,
+  "balance": 207050.1,
   "records": [
+    {
+      "id": "2026-05-29T16:46:12.987778",
+      "delta": 100,
+      "balance_after": 207050.1,
+      "reason": "焦虑的时候把我哄成小水獭",
+      "operator": "耶公主",
+      "timestamp": "2026-05-29T16:46:12.987786"
+    },
     {
       "id": "2026-05-28T17:21:38.245755",
       "delta": 500,
@@ -72,19 +80,17 @@
       "reason": "测试",
       "operator": "耶公主",
       "timestamp": "2026-05-13T23:31:17.300872"
-    },
-    {
-      "id": "2026-05-13T23:29:03.398372",
-      "delta": 1000,
-      "balance_after": 201050.1,
-      "reason": "测试",
-      "operator": "耶公主",
-      "timestamp": "2026-05-13T23:29:03.398380"
     }
   ],
-  "last_milestone": 206000,
+  "last_milestone": 207000,
   "coin_notif": true,
-  "pending_reward": null,
+  "pending_reward": {
+    "id": "2026-05-29T16:46:14.265463_9421",
+    "emoji": "💆",
+    "name": "一小时按摩券一张",
+    "triggered_at": "2026-05-29T16:46:14.265479",
+    "status": "pending"
+  },
   "card_lib": [
     {
       "id": "2026-05-13T23:29:03.398406_4445",
