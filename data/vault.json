@@ -83,7 +83,7 @@
     }
   ],
   "last_milestone": 207000,
-  "coin_notif": true,
+  "coin_notif": false,
   "pending_reward": {
     "id": "2026-05-29T16:46:16.147120_5391",
     "emoji": "🐰",
